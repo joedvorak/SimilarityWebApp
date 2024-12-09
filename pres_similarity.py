@@ -17,11 +17,12 @@ df_similarity = pd.read_pickle("nomic_similarities_oral.pkl") # Similarities for
 
 df_presentations = df_presentations_all[['Owner-First Name', 'Owner-Last Name', 'Title', 'Abstract']]
 
+screen_width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH',)
+
 st.subheader("Check similarity between presentations.")
 st.write("Select a presentation by clicking on the checkbox. You can sort the presentation list or search as well.")
 st.write("Once a presentation is selected, its abstract and the ten most similar presentations will appear.")
 sleep(75/1000) # Pause to allow javascript to return screen_width.
-st.write(screen_width)
 
 if screen_width > 800:  # Wide screen layout
     col_preslist, col_similar = st.columns([1,1])
