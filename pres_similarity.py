@@ -22,6 +22,7 @@ screen_width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH'
 st.subheader("Check similarity between presentations.")
 st.write("Select a presentation by clicking on the checkbox. You can sort the presentation list or search as well.")
 st.write("Once a presentation is selected, its abstract and the ten most similar presentations will appear.")
+st.write("If you move your mouse over the table, a menu will appear in the top left corner that lets you search within the table or download. Clicking on columns will let you sort by the column too. If text is cut off, click on an cell to see the full text.")
 sleep(75/1000) # Pause to allow javascript to return screen_width.
 
 if screen_width > 800:  # Wide screen layout
@@ -47,15 +48,18 @@ if screen_width > 800:  # Wide screen layout
     with col_similar:
         if event.selection.rows:
             st.header("Most Similar Presentations")
-            similar_presentations = df_similarity.loc[selected_pres.iloc[0].name].sort_values(ascending=False) # Create a dataframe with the 10 most similar presentations
+            similar_presentations = df_similarity.loc[selected_pres.iloc[0].name].sort_values(ascending=False) # Create a Series with the 10 most similar presentations
             # Remove the selected presentation itself from the similar presentations
             similar_presentations = similar_presentations.drop(selected_pres.iloc[0].name)
-
-            for i, (index, score) in enumerate(similar_presentations.head(10).items(), 1):  # Start enumeration from 1. Show top 10
-                similar_row = df_presentations.loc[index] # index gives the index that is in the df_presentations frame so this pulls that entry. 
-                st.write(f"**{i}:** {similar_row["Title"]}")
-                st.write(f"**Presenter:** {similar_row['Owner-First Name']} {similar_row['Owner-Last Name']} ")
-                st.write(f"**Similarity Score:** {score:.2f}")
+            # Build the similarity dataframe. Add the similarity score and similarity rank to the dataframe and show it.
+            similar_df = df_presentations.loc[similar_presentations.index]
+            similar_df.insert(0, "Similarity Score", similar_presentations)
+            similar_df.insert(0, "Similarity Rank", np.arange(1,similar_df.shape[0]+1))
+            st.dataframe(
+                similar_df,
+                use_container_width=True,
+                hide_index=True,
+                )
 else:
     st.header("Select a Presentation")
     event = st.dataframe(
@@ -75,12 +79,15 @@ else:
 
     if event.selection.rows:
         st.header("Most Similar Presentations")
-        similar_presentations = df_similarity.loc[selected_pres.iloc[0].name].sort_values(ascending=False)  # Create a dataframe with the 10 most similar presentations
+        similar_presentations = df_similarity.loc[selected_pres.iloc[0].name].sort_values(ascending=False) # Create a Series with the 10 most similar presentations
         # Remove the selected presentation itself from the similar presentations
         similar_presentations = similar_presentations.drop(selected_pres.iloc[0].name)
-
-        for i, (index, score) in enumerate(similar_presentations.head(10).items(), 1):  # Start enumeration from 1. Show top 10
-            similar_row = df_presentations.loc[index] # index gives the index that is in the df_presentations frame so this pulls that entry. 
-            st.write(f"**{i}:** {similar_row["Title"]}")
-            st.write(f"**Presenter:** {similar_row['Owner-First Name']} {similar_row['Owner-Last Name']} ")
-            st.write(f"**Similarity Score:** {score:.2f}")
+        # Build the similarity dataframe. Add the similarity score and similarity rank to the dataframe and show it.
+        similar_df = df_presentations.loc[similar_presentations.index]
+        similar_df.insert(0, "Similarity Score", similar_presentations)
+        similar_df.insert(0, "Similarity Rank", np.arange(1,similar_df.shape[0]+1))
+        st.dataframe(
+            similar_df,
+            use_container_width=True,
+            hide_index=True,
+            )
